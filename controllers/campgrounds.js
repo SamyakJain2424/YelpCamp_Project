@@ -1,5 +1,7 @@
 const Campground = require('../models/campground');
-const {cloudinary} = require("../cloudinary")
+const { cloudinary } = require("../cloudinary")
+const opencage = require('opencage-api-client');
+const mapToken = process.env.OPENCAGE_API_KEY;
 
 module.exports.index = async (req, res) => {
     const campgrounds = await Campground.find({});
@@ -11,7 +13,18 @@ module.exports.renderNewForm = (req, res) => {
 }
 
 module.exports.createCampground = async (req, res, next) => {
+    const geodata = await opencage
+        .geocode({ q: req.body.campground.location })
+        .then((data) => {
+            console.log(typeof (data.results[0].geometry));
+            return data.results[0].geometry
+        })
+        .catch((error) => {
+            console.log('error', error.message);
+        });
+    const coordinates = [geodata.lat, geodata.lng];
     const campground = new Campground(req.body.campground);
+    campground.geometry = coordinates
     campground.images = req.files.map(f => ({ url: f.path, filename: f.filename }))
     campground.author = req.user._id;
     await campground.save();
@@ -41,7 +54,7 @@ module.exports.renderEditForm = async (req, res) => {
         return res.redirect('/campgrounds')
     }
 
-    res.render('campgrounds/edit', { campground });
+    res.render('campgrounds/edit', { campground, geometry: campground.geometry });
 }
 
 module.exports.updateCampground = async (req, res) => {
@@ -51,7 +64,7 @@ module.exports.updateCampground = async (req, res) => {
     campground.images.push(...imgs);
     await campground.save();
     if (req.body.deleteImages) {
-        for(let filename of req.body.deleteImages) {
+        for (let filename of req.body.deleteImages) {
             await cloudinary.uploader.destroy(filename)
         }
         await campground.updateOne({ $pull: { images: { filename: { $in: req.body.deleteImages } } } })

@@ -1,4 +1,4 @@
-const mymap = L.map('issMap').setView(geometry, 6);
+const mymap = L.map('show-map').setView(geometry, 6);
 console.log(geometry)
 popupContent = "Hello Ji!"
 const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';

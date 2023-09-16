@@ -1,4 +1,4 @@
-const map = L.map('map').setView([39.0997265, -94.5785667], 5);
+const map = L.map('cluster-map').setView([39.0997265, -94.5785667], 5);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
